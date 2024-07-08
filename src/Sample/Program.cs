@@ -1,7 +1,13 @@
-﻿using System;
+﻿// See https://aka.ms/new-console-template for more information
+
+using System;
+using System.Linq;
 using Fujiberg.Identifiers;
 
-Console.WriteLine("Generator says: Hi from 'Sample'");
+Console.WriteLine("Hello, World!");
+Console.WriteLine(string.Join(",", typeof(Something).CustomAttributes.Select(a => a.AttributeType.Name)));
 
 [TypedId]
-public record struct SomeId;
+internal record struct Something
+{
+}

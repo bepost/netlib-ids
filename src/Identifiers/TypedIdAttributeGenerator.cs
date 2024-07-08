@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Fujiberg.Coder.CSharp;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
@@ -7,23 +8,31 @@ namespace Fujiberg.Identifiers;
 [Generator]
 public sealed class TypedIdAttributeGenerator : IIncrementalGenerator
 {
+    private static readonly Namespace Ns = new("Fujiberg.Identifiers");
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         context.RegisterPostInitializationOutput(
-            static ctx => ctx.AddSource("TypedIdAttribute.g.cs", SourceText.From(WriteAttribute(), Encoding.UTF8))
+            static ctx => ctx.AddSource("TypedIdAttribute.g.cs", SourceText.From(BuildFile(), Encoding.UTF8))
         );
     }
 
-    private static string WriteAttribute()
+    private static string BuildFile()
     {
-        return $$"""
-                 {{SourceHelpers.Header}}
-                 namespace Fujiberg.Identifiers;
+        var cf = new CodeFile {HeaderComment = SourceHelpers.HeaderComment}.WithDeclaration(BuildTypeIdAttribute());
+        return cf.ToCode();
+    }
 
-                 [System.AttributeUsage(System.AttributeTargets.Struct)]
-                 public sealed class TypedIdAttribute : System.Attribute
-                 {
-                 }
-                 """;
+    private static TypeDeclaration BuildTypeIdAttribute()
+    {
+        var cd = TypeDeclaration.Class(Ns + "TypedIdAttribute")
+            .Public()
+            .Sealed()
+            .WithParent("System.Attribute")
+            .WithAttribute(
+                Attribution.Create("System.AttributeUsage", EnumLiteral.Create("System.AttributeTargets", "Struct"))
+            )
+            .WithAttribute(SourceHelpers.GeneratedAttribution);
+        return cd;
     }
 }
