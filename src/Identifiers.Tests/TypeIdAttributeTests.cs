@@ -1,9 +1,5 @@
-using System.Linq;
 using System.Threading.Tasks;
 using Fujiberg.Identifiers;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using VerifyXunit;
 using Xunit;
 
 namespace Identifiers.Tests;
@@ -16,40 +12,45 @@ public sealed class TypeIdAttributeTests
     }
 
     [Fact]
-    public Task GeneratesTypeIdAttributeCorrectly()
+    public async Task GeneratesTypeIdAttributeCorrectly()
     {
-        // The source code to test
-        var source = """
-                     using Fujiberg.Identifiers;
-                     namespace MyNamespace
-                     {
-                         [TypedIdAttribute]
-                         public partial record struct SomeId;
-                     }
-                     """;
-        var syntaxTree = CSharpSyntaxTree.ParseText(source);
-        var compilation = CSharpCompilation.Create("Tests", [syntaxTree]);
+        await SourceGeneratorTestHelpers.TestSourceGeneratorsAsync(
+            [new TypedIdAttributeGenerator()],
+            [
+                """
+                using Fujiberg.Identifiers;
+                namespace MyNamespace
+                {
+                    [TypedIdAttribute]
+                    public partial record struct SomeId;
+                }
+                """
+            ]
+        );
+    }
 
-        var generator = new TypedIdAttributeGenerator();
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-
-        driver = driver.RunGenerators(compilation);
-
-        var results = driver.GetRunResult()
-            .Results.SelectMany(r => r.GeneratedSources)
-            .OrderBy(x => x.HintName)
-            .Select(
-                x => string.Concat(
-                    "==================== Start of ",
-                    x.HintName,
-                    " ====================\n",
-                    x.SourceText,
-                    "\n==================== End of ",
-                    x.HintName,
-                    " ====================\n\n"
-                )
-            );
-
-        return Verifier.Verify(string.Concat(results));
+    [Fact]
+    public async Task GeneratesTypeIdImplementationCorrectly()
+    {
+        await SourceGeneratorTestHelpers.TestSourceGeneratorsAsync(
+            [
+                new TypedIdAttributeGenerator(),
+                new TypedIdImplementationGenerator()
+            ],
+            [
+                """
+                using Fujiberg.Identifiers;
+                namespace MyNamespace
+                {
+                    [TypedIdAttribute]
+                    public partial record struct SomeId;
+                }
+                """
+            ],
+            [
+                // Covered by other tests
+                "TypedIdAttribute.g.cs"
+            ]
+        );
     }
 }

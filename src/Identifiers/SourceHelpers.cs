@@ -64,4 +64,15 @@ public static class SourceHelpers
               Assembly.GetExecutingAssembly()
                   .GetName()
                   .Version.ToString();
+
+    public static string GetOutputFileName(string nameSpace, string typeName)
+    {
+        typeName = typeName.Replace("<", "__")
+            .Replace(">", "");
+
+        if (nameSpace == "")
+            return typeName + ".g.cs";
+
+        return $"{nameSpace}.{typeName}.g.cs";
+    }
 }
