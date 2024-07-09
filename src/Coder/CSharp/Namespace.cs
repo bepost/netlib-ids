@@ -1,20 +1,29 @@
 ﻿namespace Fujiberg.Coder.CSharp;
 
-public sealed record Namespace(string Name = "")
+public sealed record Namespace
 {
-    public static readonly Namespace Global = new();
+    public static readonly Namespace Global = "";
+    public required string Name { get; init; }
 
-    public string ToCode(CodeGenContext context, bool includeTrailingDot)
+    public static Namespace Create(string name)
+    {
+        return new Namespace {Name = name};
+    }
+
+    public string ToCode(bool useGlobalPrefix = true, bool includeTrailingDot = false)
     {
         if (this == Global)
             return includeTrailingDot ? "global::" : "global";
-        if (context.IncludeGlobal)
-            return includeTrailingDot ? $"global::{Name}." : $"global::{Name}";
-        return includeTrailingDot ? $"{Name}." : Name;
+        return (useGlobalPrefix ? "global::" : "") + Name + (includeTrailingDot ? "." : "");
     }
 
     public static QualifiedName operator +(Namespace ns, string name)
     {
         return new QualifiedName {Namespace = ns, Name = name};
+    }
+
+    public static implicit operator Namespace(string name)
+    {
+        return Create(name);
     }
 }

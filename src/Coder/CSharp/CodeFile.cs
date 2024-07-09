@@ -5,54 +5,40 @@ namespace Fujiberg.Coder.CSharp;
 
 public sealed record CodeFile
 {
-    public IImmutableSet<Declaration> Declarations { get; init; } = [];
     public bool EnableNullability { get; init; } = true;
-    public Comment? HeaderComment { get; init; }
+    public IImmutableList<Comment> HeaderComment { get; init; } = [];
+    public IImmutableSet<NamespaceDeclaration> NamespaceDeclarations { get; init; } = [];
 
-    public string ToCode(CodeGenContext? context = null)
+    public CodeFile AddHeaders(params Comment[] headerComment)
     {
-        context ??= new CodeGenContext();
+        return this with {HeaderComment = [..HeaderComment, ..headerComment]};
+    }
 
+    public CodeFile AddNamespaces(params NamespaceDeclaration[] namespaces)
+    {
+        return this with {NamespaceDeclarations = [..NamespaceDeclarations, ..namespaces]};
+    }
+
+    public static CodeFile Create()
+    {
+        return new CodeFile();
+    }
+
+    public string ToCode()
+    {
         var cw = new CodeWriter();
 
-        if (HeaderComment is not null)
-            cw.WriteLine(HeaderComment.ToCode());
+        foreach (var comment in HeaderComment)
+            cw.Write(comment.ToCode());
+        cw.WriteLine();
 
         if (EnableNullability)
-            cw.WriteLine("#nullable enable\n");
+            cw.WriteLine("#nullable enable");
+        cw.WriteLine();
 
-        if (context.NamespaceReferences.Any())
-        {
-            foreach (var nsRef in context.NamespaceReferences.OrderBy(x => x))
-                cw.WriteLine($"using {nsRef.ToCode(context with {IncludeGlobal = false}, false)};");
-            cw.WriteLine();
-        }
-
-        var namespaces = Declarations.OrderBy(x => x.Namespace.ToCode(context with {IncludeGlobal = true}, false))
-            .GroupBy(x => x.Namespace)
-            .ToArray();
-
-        foreach (var ns in namespaces)
-        {
-            cw.WriteLine($"namespace {ns.Key.ToCode(context with {IncludeGlobal = false}, false)}");
-            using (cw.Block())
-            {
-                foreach (var decl in ns)
-                    cw.WriteLine(decl.ToCode(context));
-            }
-        }
+        foreach (var ns in NamespaceDeclarations.OrderBy(x => x.Name.Name))
+            cw.WriteLine(ns.ToCode());
 
         return cw.ToString();
     }
-
-    public CodeFile WithDeclaration(Declaration type)
-    {
-        return this with {Declarations = Declarations.Add(type)};
-    }
-}
-
-public sealed record CodeGenContext
-{
-    public bool IncludeGlobal { get; init; } = true;
-    public IImmutableSet<Namespace> NamespaceReferences { get; init; } = [];
 }

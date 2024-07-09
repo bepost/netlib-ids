@@ -2,5 +2,5 @@
 
 public abstract record Expression
 {
-    public abstract string ToCode(CodeGenContext context);
+    public abstract string ToCode();
 }

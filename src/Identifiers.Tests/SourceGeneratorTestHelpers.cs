@@ -12,7 +12,7 @@ internal static class SourceGeneratorTestHelpers
     public static async Task TestSourceGeneratorsAsync(
         IEnumerable<IIncrementalGenerator> generators,
         IEnumerable<string> sources,
-        IEnumerable<string> ignoreFiles = null)
+        IEnumerable<string>? ignoreFiles = null)
     {
         ignoreFiles ??= [];
 

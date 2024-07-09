@@ -7,8 +7,8 @@ public sealed record EnumLiteral(QualifiedName Name, string Value) : Literal
         return new EnumLiteral(name, value);
     }
 
-    public override string ToCode(CodeGenContext context)
+    public override string ToCode()
     {
-        return $"{Name.ToCode(context)}.{Value}";
+        return $"{Name.ToCode()}.{Value}";
     }
 }

@@ -4,9 +4,9 @@ using Xunit;
 
 namespace Identifiers.Tests;
 
-public sealed class TypeIdAttributeTests
+public sealed class TypeIdImplementationTests
 {
-    public TypeIdAttributeTests()
+    public TypeIdImplementationTests()
     {
         SourceHelpers.Repeatable = true;
     }
@@ -15,7 +15,10 @@ public sealed class TypeIdAttributeTests
     public async Task GenerateCorrectly()
     {
         await SourceGeneratorTestHelpers.TestSourceGeneratorsAsync(
-            [new TypedIdAttributeGenerator()],
+            [
+                new TypedIdAttributeGenerator(),
+                new TypedIdImplementationGenerator()
+            ],
             [
                 """
                 using Fujiberg.Identifiers;
@@ -25,6 +28,10 @@ public sealed class TypeIdAttributeTests
                     public partial record struct SomeId;
                 }
                 """
+            ],
+            [
+                // Covered by other tests
+                "TypedIdAttribute.g.cs"
             ]
         );
     }

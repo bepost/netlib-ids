@@ -7,7 +7,7 @@ public sealed record StringLiteral(string Value) : Literal
         return new StringLiteral(value);
     }
 
-    public override string ToCode(CodeGenContext context)
+    public override string ToCode()
     {
         var value = Value.Replace("\"", "\\\"")
             .Replace("\n", "\\n")

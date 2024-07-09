@@ -64,39 +64,10 @@ public sealed class CodeWriter
         return this;
     }
 
-    public CodeWriter WriteIf(bool condition, string code)
-    {
-        if (!condition)
-            return this;
-
-        if (string.IsNullOrEmpty(code))
-            return this;
-
-        Append(code);
-        return this;
-    }
-
     public CodeWriter WriteLine(string code = "")
     {
         Write(code);
         AppendLine();
-        return this;
-    }
-
-    public CodeWriter WriteLineIf(bool condition, string code = "")
-    {
-        if (!condition)
-            return this;
-
-        Write(code);
-        AppendLine();
-        return this;
-    }
-
-    public CodeWriter WriteLines(IEnumerable<string> lines)
-    {
-        foreach (var line in lines)
-            WriteLine(line);
         return this;
     }
 
@@ -108,6 +79,8 @@ public sealed class CodeWriter
             switch (c)
             {
                 case '\n':
+                    if (_lineBuilder.Length == 0)
+                        _lineBuilder.Append(_indent);
                     AppendLine();
                     break;
                 case '\r':

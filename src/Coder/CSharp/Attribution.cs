@@ -12,15 +12,15 @@ public sealed record Attribution(QualifiedName Name)
         return new Attribution(name) with {OrderedArguments = [..orderedArguments]};
     }
 
-    public string ToCode(CodeGenContext context)
+    public string ToCode()
     {
         var cw = new CodeWriter();
         cw.Write("[");
-        cw.Write(Name.ToCode(context));
+        cw.Write(Name.ToCode());
         if (OrderedArguments.Any())
         {
             cw.Write("(");
-            cw.Write(string.Join(", ", OrderedArguments.Select(x => x.ToCode(context))));
+            cw.Write(string.Join(", ", OrderedArguments.Select(x => x.ToCode())));
             cw.Write(")");
         }
 

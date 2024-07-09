@@ -23,11 +23,11 @@ public sealed class CodeFileTests
     {
         // Arrange
         var lines = new[] {Faker.Lorem.Sentence(), Faker.Lorem.Sentence(), Faker.Lorem.Sentence()};
-        var header = string.Join('\n', lines);
         var expected = string.Concat(lines.Select(l => $"// {l}{Environment.NewLine}"));
 
         // Act
-        var cf = new CodeFile {HeaderComment = header};
+        var cf = CodeFile.Create()
+            .AddHeaders([..lines.Select(Comment.CreateLine)]);
         var output = cf.ToCode();
 
         Log.WriteLine(output);
