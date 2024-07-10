@@ -1,20 +1,25 @@
 using System.Threading.Tasks;
 using Fujiberg.Identifiers;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Identifiers.Tests;
 
 public sealed class TypeIdImplementationTests
 {
-    public TypeIdImplementationTests()
+    public TypeIdImplementationTests(ITestOutputHelper output)
     {
+        _output = output;
         SourceHelpers.Repeatable = true;
     }
+
+    private readonly ITestOutputHelper _output;
 
     [Fact]
     public async Task GenerateCorrectly()
     {
         await SourceGeneratorTestHelpers.TestSourceGeneratorsAsync(
+            _output,
             [
                 new TypedIdAttributeGenerator(),
                 new TypedIdImplementationGenerator()
@@ -31,7 +36,7 @@ public sealed class TypeIdImplementationTests
             ],
             [
                 // Covered by other tests
-                "TypedIdAttribute.g.cs"
+                SourceHelpers.GetOutputFileName(TypedIdAttributeGenerator.Name)
             ]
         );
     }

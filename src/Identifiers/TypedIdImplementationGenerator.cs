@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Text;
+using Fujiberg.Coder.CSharp;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -37,7 +38,7 @@ public sealed class TypedIdImplementationGenerator : IIncrementalGenerator
 
             var source = GenerateTypeIdSource(typedId);
             context.AddSource(
-                SourceHelpers.GetOutputFileName(typedId.NameSpace, typedId.Name),
+                SourceHelpers.GetOutputFileName(typedId.QualifiedName),
                 SourceText.From(source, Encoding.UTF8)
             );
         }
@@ -45,47 +46,81 @@ public sealed class TypedIdImplementationGenerator : IIncrementalGenerator
 
     private static string GenerateTypeIdSource(TypedIdDeclaration typedId)
     {
-        return $$"""
-                 {{SourceHelpers.Header}}
-
-                 namespace {{typedId.NameSpace}};
-
-                 {{SourceHelpers.GeneratedAttribute}}
-                 partial record struct {{typedId.Name}} : global::System.IParsable<{{typedId.NameSpace}}.{{typedId.Name}}>
-                 {
-                     private readonly global::System.Guid _value;
-                     public {{typedId.Name}}(global::System.Guid value)
-                     {
-                        _value = value;
-                     }
-                     
-                     public global::System.Guid Value => _value;
-                     
-                     public static {{typedId.NameSpace}}.{{typedId.Name}} New() => new {{typedId.Name}}(global::System.Guid.NewGuid());
-                     
-                     public override string ToString() => $"{_value}";
-                     
-                     public static {{typedId.NameSpace}}.{{typedId.Name}} Parse(string s, global::System.IFormatProvider? provider)
-                     {
-                        return new {{typedId.NameSpace}}.{{typedId.Name}}(global::System.Guid.Parse(s));
-                     }
-                 
-                     public static bool TryParse(
-                        [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] string? s,
-                        global::System.IFormatProvider? provider,
-                        [global::System.Diagnostics.CodeAnalysis.MaybeNullWhen(false)] out {{typedId.NameSpace}}.{{typedId.Name}} result)
-                     {
-                        if(!global::System.Guid.TryParse(s, out var guid))
-                        {
-                            result = default;
-                            return false;
-                        }
-                 
-                        result = new {{typedId.NameSpace}}.{{typedId.Name}}(guid);
-                        return true;
-                     }
-                 }
-                 """;
+//         var cf = CodeFile.Create()
+//             .AddHeaders(SourceHelpers.HeaderComment)
+//             .AddNamespaces(
+//                 NamespaceDeclaration.Create(typedId.NameSpace)
+//                     .AddTypes(
+//                         TypeDeclaration.CreateRecordStruct(typedId.Name)
+//                             .AsPartial()
+//                             .WithInterfaces(QualifiedName.Create("System.IParsable", typedId.QualifiedName))
+//                             .AddAttributes(SourceHelpers.GeneratedAttribution)
+//                             .AddMembers(
+//                                 Field.Create("System.Guid", "_value")
+//                                     .Private()
+//                                     .AsReadOnly(),
+//                                 Constructor.Create(typedId.Name)
+//                                     .Public()
+//                                     .WithParameters(Parameter.Create("System.Guid", "value"))
+//                                     .WithBody("this._value = value;"),
+//                                 Parameter.Create("System.Guid", "Value")
+//                                     .Public()
+//                                     .WithGetter("return _value;"),
+//                                 Method.Create("New", typedId.QualifiedName)
+//                                     .Public()
+//                                     .Static()
+//                                     .WithBody($"return new {typedId.Name}(global::System.Guid.NewGuid());"),
+//                                 Method.Create("string", "ToString")
+//                                     .Public()
+//                                     .Override()
+//                                     .WithBody("return $\"{_value}\";"),
+//                                 Method.Create(typedId.QualifiedName, "Parse")
+//                                     .Public()
+//                                     .Static()
+//                                     .WithParameters(
+//                                         Parameter.Create("string", "s"),
+//                                         Parameter.Create("System.IFormatProvider?", "provider")
+//                                     )
+//                                     .WithBody($"return new {typedId.Name}(global::System.Guid.Parse(s));"),
+//                                 Method.Create("bool", "TryParse")
+//                                     .Public()
+//                                     .Static()
+//                                     .WithParameters(
+//                                         Parameter.Create("string", "s")
+//                                             .AddAttributes(
+//                                                 Attribution.Create(
+//                                                     "System.Diagnostics.CodeAnalysis.NotNullWhen",
+//                                                     BoolLiteral.True
+//                                                 )
+//                                             ),
+//                                         Parameter.Create("global::System.IFormatProvider?", "provider"),
+//                                         Parameter.Create(typedId.QualifiedName, "result")
+//                                             .Out()
+//                                             .AddAttributes(
+//                                                 Attribution.Create(
+//                                                     "System.Diagnostics.CodeAnalysis.MaybeNullWhen",
+//                                                     BoolLiteral.False
+//                                                 )
+//                                             )
+//                                     )
+//                                     .WithBody(
+//                                         $$"""
+//                                           if(!global::System.Guid.TryParse(s, out var guid))
+//                                           {
+//                                               result = default;
+//                                               return false;
+//                                           }
+//
+//                                           result = new {{typedId.NameSpace}}.{{typedId.Name}}(guid);
+//                                           return true;
+//                                           """
+//                                     )
+//                             )
+//                     )
+//             );
+//
+//         return cf.ToCode();
+        return "X";
     }
 
     private static string GetNameSpace(TypeDeclarationSyntax structSymbol)
@@ -144,6 +179,7 @@ public sealed class TypedIdImplementationGenerator : IIncrementalGenerator
         }
 
         public string Name { get; }
-        public string NameSpace { get; }
+        public Namespace NameSpace { get; }
+        public QualifiedName QualifiedName => NameSpace + Name;
     }
 }

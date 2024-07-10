@@ -2,6 +2,7 @@
 
 public enum Accessor
 {
+    Unset = 0,
     Private,
     Protected,
     Internal,

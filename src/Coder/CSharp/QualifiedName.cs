@@ -1,30 +1,41 @@
-﻿namespace Fujiberg.Coder.CSharp;
+﻿using System;
+using System.Collections.Immutable;
+using System.Linq;
+
+namespace Fujiberg.Coder.CSharp;
 
 public sealed record QualifiedName
 {
-    public required string Name { get; init; }
-    public required Namespace Namespace { get; init; }
-
-    public static QualifiedName Create(string fqdn)
+    public QualifiedName(Namespace @namespace, string name)
     {
-        if (fqdn.Contains("."))
-        {
-            return new QualifiedName
-            {
-                Namespace = fqdn[..fqdn.LastIndexOf('.')], Name = fqdn[(fqdn.LastIndexOf('.') + 1)..]
-            };
-        }
-
-        return new QualifiedName {Namespace = Namespace.Global, Name = fqdn};
+        Namespace = @namespace;
+        Name = name;
     }
 
-    public string ToCode()
+    public IImmutableList<QualifiedName> Generics { get; init; } = [];
+    public string Name { get; init; }
+    public Namespace Namespace { get; init; }
+
+    public string ToCode(bool useGlobalPrefix = true)
     {
-        return Namespace.ToCode(includeTrailingDot: true) + Name;
+        var type = Namespace.ToCode(includeTrailingDot:true, useGlobalPrefix:useGlobalPrefix) + Name;
+        if (Generics.Any())
+            type = type + "<" + string.Join(", ", Generics.Select(x => x.ToCode())) + ">";
+        return type;
     }
 
     public static implicit operator QualifiedName(string fqdn)
     {
-        return Create(fqdn);
+        var ix = fqdn.LastIndexOf(value:'.');
+        if (ix == -1)
+            return new QualifiedName(Namespace.Global, fqdn);
+
+        return new QualifiedName(fqdn[..ix], fqdn[(ix + 1)..]);
+    }
+
+    public static implicit operator QualifiedName(Type type)
+    {
+        // TODO Add generics
+        return new QualifiedName(type.Namespace ?? Namespace.Global, type.Name);
     }
 }

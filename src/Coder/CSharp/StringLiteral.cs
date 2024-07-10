@@ -1,11 +1,13 @@
 ﻿namespace Fujiberg.Coder.CSharp;
 
-public sealed record StringLiteral(string Value) : Literal
+public sealed record StringLiteral : Literal
 {
-    public static StringLiteral Create(string value)
+    public StringLiteral(string value)
     {
-        return new StringLiteral(value);
+        Value = value;
     }
+
+    public string Value { get; init; }
 
     public override string ToCode()
     {

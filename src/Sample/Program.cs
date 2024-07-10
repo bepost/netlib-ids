@@ -11,7 +11,7 @@ Console.WriteLine(string.Join(",", typeof(Something).CustomAttributes.Select(a =
 namespace Test
 {
     [TypedId]
-    internal partial record struct Something
+    internal record struct Something
     {
     }
 }

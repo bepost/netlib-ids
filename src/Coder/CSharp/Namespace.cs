@@ -3,12 +3,13 @@
 public sealed record Namespace
 {
     public static readonly Namespace Global = "";
-    public required string Name { get; init; }
 
-    public static Namespace Create(string name)
+    public Namespace(string name)
     {
-        return new Namespace {Name = name};
+        Name = name;
     }
+
+    public string Name { get; init; }
 
     public string ToCode(bool useGlobalPrefix = true, bool includeTrailingDot = false)
     {
@@ -19,11 +20,11 @@ public sealed record Namespace
 
     public static QualifiedName operator +(Namespace ns, string name)
     {
-        return new QualifiedName {Namespace = ns, Name = name};
+        return new QualifiedName(ns, name);
     }
 
     public static implicit operator Namespace(string name)
     {
-        return Create(name);
+        return new Namespace(name);
     }
 }

@@ -27,20 +27,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Coder\Coder.csproj"/>
     <ProjectReference Include="..\Identifiers\Identifiers.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
     <None Update="TypeIdAttributeTests.GeneratesTypeIdAttributeCorrectly.received.txt">
       <DependentUpon>TypeIdAttributeTests.cs</DependentUpon>
-    </None>
-    <None Update="TypeIdImplementationTests.GeneratesTypeIdAttributeCorrectly.verified.txt">
-      <ParentFile>TypeIdAttributeTests</ParentFile>
-      <DependentUpon>TypeIdImplementationTests.cs</DependentUpon>
-    </None>
-    <None Update="TypeIdImplementationTests.GeneratesTypeIdImplementationCorrectly.verified.txt">
-      <ParentFile>TypeIdAttributeTests</ParentFile>
-      <DependentUpon>TypeIdImplementationTests.cs</DependentUpon>
     </None>
     <None Update="TypeIdAttributeTests.GenerateCorrectly.verified.txt">
       <DependentUpon>TypeIdAttributeTests.cs</DependentUpon>

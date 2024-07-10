@@ -26,8 +26,7 @@ public sealed class CodeFileTests
         var expected = string.Concat(lines.Select(l => $"// {l}{Environment.NewLine}"));
 
         // Act
-        var cf = CodeFile.Create()
-            .AddHeaders([..lines.Select(Comment.CreateLine)]);
+        var cf = new CodeFile {Headers = [..lines.Select(x => new Comment(x))]};
         var output = cf.ToCode();
 
         Log.WriteLine(output);

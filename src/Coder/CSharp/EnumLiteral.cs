@@ -1,14 +1,24 @@
-﻿namespace Fujiberg.Coder.CSharp;
+﻿using System;
 
-public sealed record EnumLiteral(QualifiedName Name, string Value) : Literal
+namespace Fujiberg.Coder.CSharp;
+
+public sealed record EnumLiteral : Literal
 {
-    public static EnumLiteral Create(QualifiedName name, string value)
+    public EnumLiteral(QualifiedName type, string value)
     {
-        return new EnumLiteral(name, value);
+        Type = type;
+        Value = value;
     }
+
+    public EnumLiteral(Enum value) : this(value.GetType(), value.ToString())
+    {
+    }
+
+    public QualifiedName Type { get; init; }
+    public string Value { get; init; }
 
     public override string ToCode()
     {
-        return $"{Name.ToCode()}.{Value}";
+        return $"{Type.ToCode()}.{Value}";
     }
 }

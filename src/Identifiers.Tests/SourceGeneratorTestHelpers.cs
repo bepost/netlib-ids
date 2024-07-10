@@ -4,12 +4,14 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using VerifyXunit;
+using Xunit.Abstractions;
 
 namespace Identifiers.Tests;
 
 internal static class SourceGeneratorTestHelpers
 {
     public static async Task TestSourceGeneratorsAsync(
+        ITestOutputHelper output,
         IEnumerable<IIncrementalGenerator> generators,
         IEnumerable<string> sources,
         IEnumerable<string>? ignoreFiles = null)
@@ -37,6 +39,9 @@ internal static class SourceGeneratorTestHelpers
                 )
             );
 
-        await Verifier.Verify(string.Concat(results));
+        var code = string.Concat(results);
+
+        output.WriteLine(code);
+        await Verifier.Verify(code);
     }
 }

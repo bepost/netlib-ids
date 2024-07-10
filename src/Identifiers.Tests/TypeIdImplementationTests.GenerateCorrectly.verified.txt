@@ -1,1 +1,4 @@
-﻿
+﻿==================== Start of MyNamespace.SomeId.g.cs ====================
+X
+==================== End of MyNamespace.SomeId.g.cs ====================
+
