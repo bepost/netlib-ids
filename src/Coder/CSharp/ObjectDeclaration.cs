@@ -8,6 +8,10 @@ public abstract record ObjectDeclaration : TypeDeclaration
     {
     }
 
+    public IImmutableSet<Constructor> Constructors { get; set; }
+    public IImmutableSet<Field> Fields { get; set; }
     public IImmutableSet<QualifiedName> Interfaces { get; init; } = [];
-    public bool IsPartial { get; init; }
+    public IImmutableSet<Method> Methods { get; set; }
+    public bool Partial { get; init; }
+    public IImmutableSet<Property> Properties { get; set; }
 }

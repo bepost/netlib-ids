@@ -22,7 +22,7 @@ public abstract record ValueObjectDeclaration : ObjectDeclaration
 
         cw.Write(Accessor.ToCode());
 
-        if (IsPartial)
+        if (Partial)
             cw.Write("partial ");
 
         cw.Write($"{_kind} ");
@@ -34,11 +34,13 @@ public abstract record ValueObjectDeclaration : ObjectDeclaration
             cw.Write(" : ");
             cw.Write(string.Join(", ", Interfaces.Select(x => x.ToCode())));
         }
+
         // TODO Generic Constraints
 
         using (cw.Block())
         {
-            // TODO Members
+            foreach (var member in Members)
+                cw.WriteLine(member.ToCode());
         }
 
         return cw.ToString();

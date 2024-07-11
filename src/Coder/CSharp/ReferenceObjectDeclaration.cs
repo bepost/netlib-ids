@@ -11,10 +11,10 @@ public abstract record ReferenceObjectDeclaration : ObjectDeclaration
         _kind = kind;
     }
 
-    public bool IsAbstract { get; init; }
-    public bool IsSealed { get; init; }
-    public bool IsStatic { get; init; }
+    public bool Abstract { get; init; }
     public QualifiedName? Parent { get; init; }
+    public bool Sealed { get; init; }
+    public bool Static { get; init; }
 
     public override string ToCode()
     {
@@ -27,13 +27,13 @@ public abstract record ReferenceObjectDeclaration : ObjectDeclaration
 
         cw.Write(Accessor.ToCode());
 
-        if (IsSealed)
+        if (Sealed)
             cw.Write("sealed ");
-        if (IsAbstract)
+        if (Abstract)
             cw.Write("abstract ");
-        if (IsStatic)
+        if (Static)
             cw.Write("static ");
-        if (IsPartial)
+        if (Partial)
             cw.Write("partial ");
 
         cw.Write($"{_kind} ");
@@ -54,7 +54,14 @@ public abstract record ReferenceObjectDeclaration : ObjectDeclaration
 
         using (cw.Block())
         {
-            // TODO Members
+            foreach (var field in Fields)
+                cw.WriteLine(field.ToCode());
+            foreach (var ctor in Constructors)
+                cw.WriteLine(ctor.ToCode(Name));
+            foreach (var prop in Properties)
+                cw.WriteLine(prop.ToCode());
+            foreach (var method in Methods)
+                cw.WriteLine(method.ToCode());
         }
 
         return cw.ToString();

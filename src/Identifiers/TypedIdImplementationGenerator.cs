@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Immutable;
 using System.Text;
 using Fujiberg.Coder.CSharp;
 using Microsoft.CodeAnalysis;
@@ -25,6 +26,8 @@ public sealed class TypedIdImplementationGenerator : IIncrementalGenerator
         context.RegisterSourceOutput(compilation, Execute);
     }
 
+    cf.ToCode();
+
     private void Execute(
         SourceProductionContext context,
         (Compilation Left, ImmutableArray<TypedIdDeclaration?> Right) action)
@@ -46,81 +49,103 @@ public sealed class TypedIdImplementationGenerator : IIncrementalGenerator
 
     private static string GenerateTypeIdSource(TypedIdDeclaration typedId)
     {
-//         var cf = CodeFile.Create()
-//             .AddHeaders(SourceHelpers.HeaderComment)
-//             .AddNamespaces(
-//                 NamespaceDeclaration.Create(typedId.NameSpace)
-//                     .AddTypes(
-//                         TypeDeclaration.CreateRecordStruct(typedId.Name)
-//                             .AsPartial()
-//                             .WithInterfaces(QualifiedName.Create("System.IParsable", typedId.QualifiedName))
-//                             .AddAttributes(SourceHelpers.GeneratedAttribution)
-//                             .AddMembers(
-//                                 Field.Create("System.Guid", "_value")
-//                                     .Private()
-//                                     .AsReadOnly(),
-//                                 Constructor.Create(typedId.Name)
-//                                     .Public()
-//                                     .WithParameters(Parameter.Create("System.Guid", "value"))
-//                                     .WithBody("this._value = value;"),
-//                                 Parameter.Create("System.Guid", "Value")
-//                                     .Public()
-//                                     .WithGetter("return _value;"),
-//                                 Method.Create("New", typedId.QualifiedName)
-//                                     .Public()
-//                                     .Static()
-//                                     .WithBody($"return new {typedId.Name}(global::System.Guid.NewGuid());"),
-//                                 Method.Create("string", "ToString")
-//                                     .Public()
-//                                     .Override()
-//                                     .WithBody("return $\"{_value}\";"),
-//                                 Method.Create(typedId.QualifiedName, "Parse")
-//                                     .Public()
-//                                     .Static()
-//                                     .WithParameters(
-//                                         Parameter.Create("string", "s"),
-//                                         Parameter.Create("System.IFormatProvider?", "provider")
-//                                     )
-//                                     .WithBody($"return new {typedId.Name}(global::System.Guid.Parse(s));"),
-//                                 Method.Create("bool", "TryParse")
-//                                     .Public()
-//                                     .Static()
-//                                     .WithParameters(
-//                                         Parameter.Create("string", "s")
-//                                             .AddAttributes(
-//                                                 Attribution.Create(
-//                                                     "System.Diagnostics.CodeAnalysis.NotNullWhen",
-//                                                     BoolLiteral.True
-//                                                 )
-//                                             ),
-//                                         Parameter.Create("global::System.IFormatProvider?", "provider"),
-//                                         Parameter.Create(typedId.QualifiedName, "result")
-//                                             .Out()
-//                                             .AddAttributes(
-//                                                 Attribution.Create(
-//                                                     "System.Diagnostics.CodeAnalysis.MaybeNullWhen",
-//                                                     BoolLiteral.False
-//                                                 )
-//                                             )
-//                                     )
-//                                     .WithBody(
-//                                         $$"""
-//                                           if(!global::System.Guid.TryParse(s, out var guid))
-//                                           {
-//                                               result = default;
-//                                               return false;
-//                                           }
-//
-//                                           result = new {{typedId.NameSpace}}.{{typedId.Name}}(guid);
-//                                           return true;
-//                                           """
-//                                     )
-//                             )
-//                     )
-//             );
-//
-//         return cf.ToCode();
-        return "X";
+        var cf = new CodeFile
+        {
+            Headers = [SourceHelpers.HeaderComment],
+            Declarations =
+            [
+                new NamespaceDeclaration(typedId.NameSpace)
+                {
+                    Declarations =
+                    [
+                        new RecordStructObjectDeclaration(typedId.Name)
+                        {
+                            Partial = true,
+                            Interfaces =
+                                [new QualifiedName("System", "IParsable") {Generics = [typedId.QualifiedName]}],
+                            Attributes = [SourceHelpers.GeneratedAttribution],
+                            Fields =
+                            [
+                                new Field(typeof(Guid), "_value") {Accessor = Accessor.Private, ReadOnly = true}
+                            ],
+                            Constructors =
+                            [
+                                Constructor.Create(typedId.Name)
+                                    .Public()
+                                    .WithParameters(Parameter.Create("System.Guid", "value"))
+                                    .WithBody("this._value = value;")
+                            ],
+                            Properties =
+                            [
+                                new Property(typeof(Guid), "Value")
+                                {
+                                    Accessor = Accessor.Public, Getter = new Getter {Body = "return _value;"}
+                                }
+                            ],
+                            Methods =
+                            [
+                                new Method(typedId.QualifiedName, "New")
+                                {
+                                    Accessor = Accessor.Public,
+                                    Static = true,
+                                    Body = $"return new {typedId.Name}(global::System.Guid.NewGuid());"
+                                },
+                                new Method(typeof(string), "ToString")
+                                {
+                                    Accessor = Accessor.Public, Override = true, Body = "return $\"{_value}\";"
+                                },
+                                new Method(typedId.QualifiedName, "Parse")
+                                {
+                                    Accessor = Accessor.Public,
+                                    Static = true,
+                                    Parameters =
+                                    [
+                                        Parameter.Create(typeof(string), "s"),
+                                        Parameter.Create("IFormatProvider?", "provider")
+                                    ],
+                                    Body = $"return new {typedId.Name}(global::System.Guid.Parse(s));"
+                                },
+                                new Method(typeof(bool), "TryParse")
+                                {
+                                    Accessor = Accessor.Public,
+                                    Static = true,
+                                    Parameters =
+                                    [
+                                        Parameter.Create("string", "s")
+                                            .AddAttributes(
+                                                Attribution.Create(
+                                                    "System.Diagnostics.CodeAnalysis.NotNullWhen",
+                                                    BoolLiteral.True
+                                                )
+                                            ),
+                                        Parameter.Create("global::System.IFormatProvider?", "provider"),
+                                        Parameter.Create(typedId.QualifiedName, "result")
+                                            .Out()
+                                            .AddAttributes(
+                                                Attribution.Create(
+                                                    "System.Diagnostics.CodeAnalysis.MaybeNullWhen",
+                                                    BoolLiteral.False
+                                                )
+                                            )
+                                    ],
+                                    Body = $$"""
+                                             if(!global::System.Guid.TryParse(s, out var guid))
+                                             {
+                                                 result = default;
+                                                 return false;
+                                             }
+
+                                             result = new {{typedId.NameSpace}}.{{typedId.Name}}(guid);
+                                             return true;
+                                             """
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
+        return cf.ToCode();
     }
 
     private static string GetNameSpace(TypeDeclarationSyntax structSymbol)
@@ -170,7 +195,7 @@ public sealed class TypedIdImplementationGenerator : IIncrementalGenerator
         return new TypedIdDeclaration(name, nameSpace);
     }
 
-    private sealed class TypedIdDeclaration
+    internal sealed class TypedIdDeclaration
     {
         public TypedIdDeclaration(string name, string nameSpace)
         {

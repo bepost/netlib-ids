@@ -35,7 +35,7 @@ public sealed class TypedIdAttributeGenerator : IIncrementalGenerator
                         new ClassDeclaration(Name.Name)
                         {
                             Accessor = Accessor.Public,
-                            IsSealed = true,
+                            Sealed = true,
                             Parent = typeof(Attribute),
                             Attributes =
                             [
